@@ -245,7 +245,7 @@ static int nand_read_page(const struct nfc_config *conf, u32 offs,
 {
 	dma_addr_t dst = (dma_addr_t)dest;
 	int nsectors = len / conf->ecc_size;
-	u16 rand_seed;
+	u16 rand_seed = 0;
 	u32 val;
 	int page;
 
@@ -258,8 +258,9 @@ static int nand_read_page(const struct nfc_config *conf, u32 offs,
 	/* clear ecc status */
 	writel(0, SUNXI_NFC_BASE + NFC_ECC_ST);
 
-	/* Choose correct seed */
-	rand_seed = random_seed[page % conf->nseeds];
+	/* Choose correct seed if randomized */
+	if (conf->randomize)
+		rand_seed = random_seed[page % conf->nseeds];
 
 	writel((rand_seed << 16) | (conf->ecc_strength << 12) |
 		(conf->randomize ? NFC_ECC_RANDOM_EN : 0) |
@@ -313,8 +314,10 @@ static int nand_read_page(const struct nfc_config *conf, u32 offs,
 	val = readl(SUNXI_NFC_BASE + NFC_ECC_ST);
 
 	/* ECC error detected. */
-	if (val & 0xffff)
+	if (val & 0xffff) {
+		printf("ECC error detected.\n");
 		return -EIO;
+	}
 
 	/*
 	 * Return 1 if the page is empty.
@@ -406,6 +409,7 @@ static int nand_detect_ecc_config(struct nfc_config *conf, u32 offs,
 				 * If page is empty we can't deduce anything
 				 * about the ECC config => stop the detection.
 				 */
+				printf("Page is empty.\n");
 				return -EINVAL;
 			}
 
@@ -434,6 +438,7 @@ static int nand_detect_ecc_config(struct nfc_config *conf, u32 offs,
 			} while (conf->nseeds >= 16);
 		}
 	}
+	printf("Page is empty.\n");
 
 	return -EINVAL;
 }
@@ -458,11 +463,18 @@ static int nand_detect_config(struct nfc_config *conf, u32 offs, void *dest)
 		 */
 		for (conf->page_size = 2048; conf->page_size <= max_page_size;
 		     conf->page_size <<= 1) {
-			if (nand_load_page(conf, offs))
+
+			printf("trying conf->addr_cycles=%d, page_size=%d\n",
+				conf->addr_cycles, conf->page_size);
+
+			if (nand_load_page(conf, offs)) {
+				printf("nand_load_page() failed\n");
 				return -1;
+			}
 
 			if (!nand_detect_ecc_config(conf, offs, dest)) {
 				conf->valid = true;
+				printf("nand_detect_ecc_config() succesful\n");
 				return 0;
 			}
 		}
