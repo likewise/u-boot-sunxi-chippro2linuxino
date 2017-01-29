@@ -486,17 +486,24 @@ static int nand_detect_config(struct nfc_config *conf, u32 offs, void *dest)
 static int nand_read_buffer(struct nfc_config *conf, uint32_t offs,
 			    unsigned int size, void *dest)
 {
-	int first_seed, page, ret;
+	int first_seed = 0, page, ret;
 
 	size = ALIGN(size, conf->page_size);
 	page = offs / conf->page_size;
-	first_seed = page % conf->nseeds;
+	if (conf->randomize)
+		first_seed = page % conf->nseeds;
+
+			printf("conf->nseeds = %d, first_seed = %d\n", conf->nseeds, first_seed);
+
 
 	for (; size; size -= conf->page_size) {
-		if (nand_load_page(conf, offs))
+		if (nand_load_page(conf, offs)) {
+			printf("nand_load_page() failed\n");
 			return -1;
+		}
 
 		ret = nand_read_page(conf, offs, dest, conf->page_size);
+		printf("nand_read_page()=%d\n", ret);
 		/*
 		 * The ->nseeds value should be equal to the number of pages
 		 * in an eraseblock. Since we don't know this information in
@@ -509,18 +516,24 @@ static int nand_read_buffer(struct nfc_config *conf, uint32_t offs,
 			 * We already tried all the seed values => we are
 			 * facing a real corruption.
 			 */
-			if (cur_seed < first_seed)
+			if (cur_seed < first_seed) {
+				printf("tried all seeds\n");
 				return -EIO;
+			}
 
 			/* Try to adjust ->nseeds and read the page again... */
 			conf->nseeds = cur_seed;
 
-			if (nand_reset_column())
+			if (nand_reset_column()) {
+				printf("nand_reset_column\n");
 				return -EIO;
+			}
 
 			/* ... it still fails => it's a real corruption. */
-			if (nand_read_page(conf, offs, dest, conf->page_size))
+			if (nand_read_page(conf, offs, dest, conf->page_size)) {
+				printf("corrupted\n");
 				return -EIO;
+			}
 		} else if (ret && conf->randomize) {
 			memset(dest, 0xff, conf->page_size);
 		}
