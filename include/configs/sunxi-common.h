@@ -133,6 +133,13 @@
 #define CONFIG_SYS_NAND_ONFI_DETECTION
 #define CONFIG_SYS_MAX_NAND_DEVICE 8
 
+
+/* @TODO Leon */
+#if 0
+#define CONFIG_ENV_OFFSET (4 * 0x400000)
+#define CONFIG_ENV_OFFSET_REDUND (5 * 0x400000)
+#endif
+
 #define CONFIG_MTD_DEVICE
 #define CONFIG_MTD_PARTITIONS
 #endif
@@ -194,6 +201,10 @@
 #elif defined(CONFIG_MACH_SUN50I)
 #define CONFIG_SPL_TEXT_BASE		0x10040		/* sram start+header */
 #define CONFIG_SPL_MAX_SIZE		0x7fc0		/* 32 KiB on sun50i */
+/* @TODO LEON specific for A13 */
+#elif defined(CONFIG_MACH_SUN5I)
+#define CONFIG_SPL_TEXT_BASE		0x40		/* sram start+header */
+#define CONFIG_SPL_MAX_SIZE		(0x5fc0 + 1024)		/* 24KB on sun5i */
 #else
 #define CONFIG_SPL_TEXT_BASE		0x40		/* sram start+header */
 #define CONFIG_SPL_MAX_SIZE		0x5fc0		/* 24KB on sun4i/sun7i */
@@ -214,13 +225,14 @@
 #define CONFIG_SYS_SPL_ARGS_ADDR		(PHYS_SDRAM_0 + 0x100)
 /* boot OS from MMC */
 #ifdef CONFIG_SPL_MMC_SUPPORT
+#error
 #define CONFIG_SYS_MMCSD_RAW_MODE_ARGS_SECTOR	1344
 #define CONFIG_SYS_MMCSD_RAW_MODE_ARGS_SECTORS  256
 #define CONFIG_SYS_MMCSD_RAW_MODE_KERNEL_SECTOR 1600
 #endif
 /* SPL can boot OS from NAND */
-#ifdef CONFIG_SPL_MMC_SUPPORT
-#define CONFIG_CMD_SPL_NAND_OFS 0x01000000
+#ifdef CONFIG_SPL_NAND_SUPPORT
+#define CONFIG_CMD_SPL_NAND_OFS 0x01800000
 #define CONFIG_CMD_SPL_WRITE_SIZE 0x400000
 #define CONFIG_SYS_NAND_SPL_KERNEL_OFFS (CONFIG_CMD_SPL_NAND_OFS + CONFIG_CMD_SPL_WRITE_SIZE)
 #endif
