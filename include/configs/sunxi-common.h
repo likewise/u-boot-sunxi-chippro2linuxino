@@ -67,7 +67,7 @@
 #define CONFIG_SYS_SDRAM_BASE		0x20000000
 #define CONFIG_SYS_LOAD_ADDR		0x22000000 /* default load address */
 #define CONFIG_SYS_TEXT_BASE		0x2a000000
-/* Note SPL_STACK_R_ADDR is set through Kconfig, we include it here 
+/* Note SPL_STACK_R_ADDR is set through Kconfig, we include it here
  * since it needs to fit in with the other values. By also #defining it
  * we get warnings if the Kconfig value mismatches. */
 #define CONFIG_SPL_STACK_R_ADDR		0x2fe00000
@@ -77,7 +77,7 @@
 #define CONFIG_SYS_SDRAM_BASE		0x40000000
 #define CONFIG_SYS_LOAD_ADDR		0x42000000 /* default load address */
 #define CONFIG_SYS_TEXT_BASE		0x4a000000
-/* Note SPL_STACK_R_ADDR is set through Kconfig, we include it here 
+/* Note SPL_STACK_R_ADDR is set through Kconfig, we include it here
  * since it needs to fit in with the other values. By also #defining it
  * we get warnings if the Kconfig value mismatches. */
 #define CONFIG_SPL_STACK_R_ADDR		0x4fe00000
@@ -204,6 +204,27 @@
 #endif
 
 #define CONFIG_SPL_PAD_TO		32768		/* decimal for 'dd' */
+
+/* @TODO: LEON added this from
+ * https://github.com/linux-sunxi/u-boot-sunxi/blob/sunxi/include/configs/sunxi-common.h
+ * probably move this into ./sun5i.h since only sun5i can fit larger SPL
+  */
+#ifdef CONFIG_SPL_OS_BOOT
+#define CONFIG_CMD_SPL
+#define CONFIG_SYS_SPL_ARGS_ADDR		(PHYS_SDRAM_0 + 0x100)
+/* boot OS from MMC */
+#ifdef CONFIG_SPL_MMC_SUPPORT
+#define CONFIG_SYS_MMCSD_RAW_MODE_ARGS_SECTOR	1344
+#define CONFIG_SYS_MMCSD_RAW_MODE_ARGS_SECTORS  256
+#define CONFIG_SYS_MMCSD_RAW_MODE_KERNEL_SECTOR 1600
+#endif
+/* SPL can boot OS from NAND */
+#ifdef CONFIG_SPL_MMC_SUPPORT
+#define CONFIG_CMD_SPL_NAND_OFS 0x01000000
+#define CONFIG_CMD_SPL_WRITE_SIZE 0x400000
+#define CONFIG_SYS_NAND_SPL_KERNEL_OFFS (CONFIG_CMD_SPL_NAND_OFS + CONFIG_CMD_SPL_WRITE_SIZE)
+#endif
+#endif
 
 #if defined(CONFIG_MACH_SUN9I) || defined(CONFIG_MACH_SUN50I)
 /* FIXME: 40 KiB instead of 32 KiB ? */
