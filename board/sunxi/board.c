@@ -77,6 +77,28 @@ static int soft_i2c_board_init(void) { return 0; }
 
 DECLARE_GLOBAL_DATA_PTR;
 
+#if 0
+/* @TODO Leon */
+/* => md.l 0x01C20834 1
+01c20834: 00078004                               ....
+ * short-circuit pin 13 (PB10) and 3 (3.3V) on GPIO-2 header: 
+=> md.l 0x01C20834 1
+01c20834: 00078404                               ....
+*/
+int boot_to_uboot(void)
+{
+	int falcon_pin = sunxi_name_to_gpio("PB10");
+	int ret = gpio_request(falcon_pin, "falcon-boot");
+	if (ret) {
+		printf("Error requesting falcon pin pin: '%s', err %d\n",
+		       "PB10", ret);
+		return 1;
+	}
+	gpio_direction_input(falcon_pin);
+	return gpio_get_value(falcon_pin)? 0: 1;
+}
+#endif
+
 /* add board specific code here */
 int board_init(void)
 {

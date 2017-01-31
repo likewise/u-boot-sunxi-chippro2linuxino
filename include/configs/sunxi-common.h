@@ -204,7 +204,7 @@
 /* @TODO LEON specific for A13 */
 #elif defined(CONFIG_MACH_SUN5I)
 #define CONFIG_SPL_TEXT_BASE		0x40		/* sram start+header */
-#define CONFIG_SPL_MAX_SIZE		(0x5fc0 + 1024)		/* 24KB on sun5i */
+#define CONFIG_SPL_MAX_SIZE		(0x5fc0 + 0*512)		/* 24KB on sun5i */
 #else
 #define CONFIG_SPL_TEXT_BASE		0x40		/* sram start+header */
 #define CONFIG_SPL_MAX_SIZE		0x5fc0		/* 24KB on sun4i/sun7i */
@@ -232,7 +232,7 @@
 #endif
 /* SPL can boot OS from NAND */
 #ifdef CONFIG_SPL_NAND_SUPPORT
-#define CONFIG_CMD_SPL_NAND_OFS 0x01800000
+#define CONFIG_CMD_SPL_NAND_OFS 0x1800000
 #define CONFIG_CMD_SPL_WRITE_SIZE 0x400000
 #define CONFIG_SYS_NAND_SPL_KERNEL_OFFS (CONFIG_CMD_SPL_NAND_OFS + CONFIG_CMD_SPL_WRITE_SIZE)
 #endif
